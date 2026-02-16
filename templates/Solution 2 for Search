@@ -1,0 +1,161 @@
+```html
+<div class="global-search-container">
+  <h2>Global Search</h2>
+  <div class="global-search-box">
+    <input
+      type="text"
+      id="globalSearchInput"
+      placeholder="Search across all records..."
+    />
+    <button id="globalSearchButton">Search</button>
+  </div>
+
+  <div id="globalSearchStatus" style="margin-top:10px;"></div>
+
+  <div id="globalSearchResults" style="margin-top:20px;">
+    <!-- Results will be rendered here -->
+  </div>
+</div>
+
+
+```Javascript
+<script>
+  (function () {
+    const searchInput = document.getElementById("globalSearchInput");
+    const searchButton = document.getElementById("globalSearchButton");
+    const resultsContainer = document.getElementById("globalSearchResults");
+    const statusContainer = document.getElementById("globalSearchStatus");
+
+    if (!searchInput || !searchButton) return;
+
+    const search = async () => {
+      const term = (searchInput.value || "").trim();
+      resultsContainer.innerHTML = "";
+      statusContainer.textContent = "";
+
+      if (!term) {
+        statusContainer.textContent = "Please enter a search term.";
+        return;
+      }
+
+      statusContainer.textContent = "Searching...";
+
+      try {
+        // Power Pages Web API base URL
+        const baseUrl = "/_api/search";
+
+        // Dataverse search request body
+        const body = {
+          search: term,
+          // Optional: limit results
+          top: 20,
+          // Optional: specify tables (entities)
+          // If omitted, it searches all searchable tables
+          // entities: ["account", "contact", "incident", "new_customtable"]
+        };
+
+        const response = await fetch(baseUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Accept": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Search error:", errorText);
+          statusContainer.textContent = "Error performing search.";
+          return;
+        }
+
+        const data = await response.json();
+        renderResults(data);
+        statusContainer.textContent = `Found ${data.value?.length || 0} result(s).`;
+      } catch (e) {
+        console.error(e);
+        statusContainer.textContent = "Unexpected error performing search.";
+      }
+    };
+
+    const renderResults = (data) => {
+      const results = data.value || [];
+      if (!results.length) {
+        resultsContainer.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+
+      const list = document.createElement("ul");
+      list.className = "global-search-results-list";
+
+      results.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "global-search-result-item";
+
+        const primaryField = item["@search.score"] ? item["search.score"] : "";
+        const entityName = item["@search.entityname"] || item["entityname"];
+        const recordId = item["id"];
+
+        const title =
+          item["name"] ||
+          item["fullname"] ||
+          item["title"] ||
+          item["subject"] ||
+          "(No title)";
+
+        const snippet =
+          item["description"] ||
+          item["summary"] ||
+          item["search.matchingcontent"] ||
+          "";
+
+        // Build a URL to a Power Pages page for this entity
+        // You can customize this mapping per entity
+        const recordUrl = buildRecordUrl(entityName, recordId);
+
+        li.innerHTML = `
+          <div class="result-header">
+            <a href="${recordUrl}">${title}</a>
+          </div>
+          <div class="result-meta">
+            <span class="entity-name">${entityName}</span>
+          </div>
+          <div class="result-snippet">
+            ${snippet ? snippet : ""}
+          </div>
+        `;
+
+        list.appendChild(li);
+      });
+
+      resultsContainer.innerHTML = "";
+      resultsContainer.appendChild(list);
+    };
+
+    // Map entity logical names to Power Pages URLs
+    const buildRecordUrl = (entityName, id) => {
+      // Example mapping – adjust to your site structure
+      switch (entityName) {
+        case "account":
+          return `/account-detail/?id=${encodeURIComponent(id)}`;
+        case "contact":
+          return `/contact-detail/?id=${encodeURIComponent(id)}`;
+        case "incident":
+          return `/case-detail/?id=${encodeURIComponent(id)}`;
+        default:
+          // Fallback: generic record page or Dataverse form
+          return `/record/?entity=${encodeURIComponent(
+            entityName
+          )}&id=${encodeURIComponent(id)}`;
+      }
+    };
+
+    searchButton.addEventListener("click", search);
+    searchInput.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") {
+        search();
+      }
+    });
+  })();
+</script>
