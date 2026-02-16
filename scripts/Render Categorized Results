@@ -1,0 +1,39 @@
+function renderResults(results) {
+
+  const [contacts, cares, activities, opportunities] = results;
+
+  let html = "";
+
+  html += buildSection("Contacts", contacts.value, r =>
+    `<li>${r.fullname} (${r.emailaddress1 || ""})</li>`
+  );
+
+  html += buildSection("Cares", cares.value, r =>
+    `<li>${r.new_name}</li>`
+  );
+
+  html += buildSection("Care Plan Activities", activities.value, r =>
+    `<li>${r.new_name}</li>`
+  );
+
+  html += buildSection("Opportunities", opportunities.value, r =>
+    `<li>${r.name} - ${r.estimatedvalue || ""}</li>`
+  );
+
+  document.getElementById("searchResults").innerHTML = html;
+}
+
+function buildSection(title, data, templateFn){
+
+  if(!data || data.length === 0) return "";
+
+  let section = `<h5 class="mt-4">${title}</h5><ul>`;
+
+  data.forEach(item => {
+    section += templateFn(item);
+  });
+
+  section += "</ul>";
+
+  return section;
+}
