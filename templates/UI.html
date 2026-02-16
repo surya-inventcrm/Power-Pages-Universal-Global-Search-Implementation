@@ -1,0 +1,11 @@
+<div class="container mt-4">
+  <h3>Global Search</h3>
+
+  <div class="input-group mb-3">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search across records...">
+    <button class="btn btn-primary" onclick="debouncedSearch()">Search</button>
+  </div>
+
+  <div id="loading" style="display:none;">Searching...</div>
+  <div id="searchResults"></div>
+</div>
