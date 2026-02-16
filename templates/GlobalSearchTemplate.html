@@ -1,0 +1,95 @@
+<script>
+
+let debounceTimer;
+
+function debouncedSearch(){
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(performSearch, 500);
+}
+
+async function performSearch(){
+
+  const keyword = document.getElementById("searchInput").value.trim();
+
+  if(!keyword){
+    alert("Enter a search term");
+    return;
+  }
+
+  showLoading(true);
+
+  try {
+
+    const encoded = encodeURIComponent(keyword);
+
+    const results = await Promise.all([
+      searchEntity("contacts", "fullname,emailaddress1", "fullname", encoded),
+      searchEntity("new_cares", "new_name", "new_name", encoded),
+      searchEntity("new_careplanactivities", "new_name", "new_name", encoded),
+      searchEntity("opportunities", "name,estimatedvalue", "name", encoded)
+    ]);
+
+    renderResults(results);
+
+  } catch (error){
+    console.error(error);
+    document.getElementById("searchResults").innerHTML =
+      "<div class='alert alert-danger'>Error performing search.</div>";
+  }
+
+  showLoading(false);
+}
+
+async function searchEntity(entity, selectFields, filterField, keyword){
+
+  const url = `/_api/${entity}?$select=${selectFields}
+  &$filter=contains(${filterField},'${keyword}')
+  &$top=10`;
+
+  const response = await fetch(url);
+
+  if(!response.ok){
+    throw new Error("API error");
+  }
+
+  return response.json();
+}
+
+function renderResults(results){
+
+  const titles = [
+    "Contacts",
+    "Cares",
+    "Care Plan Activities",
+    "Opportunities"
+  ];
+
+  let html = "";
+
+  results.forEach((res, index) => {
+
+    if(res.value && res.value.length > 0){
+
+      html += `<h5 class="mt-4">${titles[index]} (${res.value.length})</h5>`;
+      html += "<ul>";
+
+      res.value.forEach(item => {
+        html += `<li>${Object.values(item).join(" | ")}</li>`;
+      });
+
+      html += "</ul>";
+    }
+  });
+
+  if(html === ""){
+    html = "<div class='alert alert-info'>No records found.</div>";
+  }
+
+  document.getElementById("searchResults").innerHTML = html;
+}
+
+function showLoading(state){
+  document.getElementById("loading").style.display = state ? "block" : "none";
+}
+
+</script>
