@@ -107,6 +107,16 @@ Assign the Web Template provided in this repository.
 
 ---
 
+🧩 Step 4 – Create Web Template
+
+Portal Management → Web Templates → New
+
+Name: GlobalSearchTemplate
+
+🖥 Step 5 – Add Search UI
+💻 Step 6 – Implement Search Logic
+🎨 Step 7 – Render Categorized Results
+
 ## 🧩 Web Template Structure
 
 <div class="container mt-4">
@@ -143,6 +153,28 @@ JavaScript includes:
 - Avoid returning unnecessary columns
 
 ---
+
+⚡ Step 8 – Performance Optimization
+✔ Always use $select
+✔ Add pagination:
+
+&$top=10
+
+
+✔ Add sorting:
+
+&$orderby=createdon desc
+
+
+✔ Add debounce for live search
+
+Example:
+
+let timer;
+document.getElementById("searchInput").addEventListener("keyup", function(){
+  clearTimeout(timer);
+  timer = setTimeout(performSearch, 500);
+});
 
 ## 🔒 Security Considerations
 
