@@ -1,0 +1,39 @@
+.global-search-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.global-search-box {
+  display: flex;
+  gap: 8px;
+}
+
+.global-search-box input {
+  flex: 1;
+  padding: 8px;
+}
+
+.global-search-results-list {
+  list-style: none;
+  padding: 0;
+}
+
+.global-search-result-item {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+}
+
+.global-search-result-item .result-header a {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.global-search-result-item .result-meta {
+  font-size: 12px;
+  color: #666;
+}
+
+.global-search-result-item .result-snippet {
+  margin-top: 4px;
+  font-size: 14px;
+}
